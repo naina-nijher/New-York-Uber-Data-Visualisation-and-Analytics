@@ -1,0 +1,621 @@
+<head>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/colorbrewer.v1.min.js"></script>
+<title>Uber Statistical Visualisation</title>
+<!--script src="//d3js.org/d3-scale.v0.3.min.js"></script-->	
+<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400" rel="stylesheet"> 
+
+<style>
+body {
+	padding-top: 25px;
+	margin: auto;
+	padding: 0;
+	margin: 0;
+	
+}
+
+.bar.total rect {
+  fill: orangered;
+}
+
+.bar.positive rect {
+  fill: midnightblue;
+}
+.bar line.connector {
+  stroke: grey;
+  stroke-dasharray: 3;
+}
+	
+
+.border {
+        stroke: #E6E6E6;
+        stroke-width:2px;   
+      }
+
+text.mono {
+        font-size: 10pt;
+        font-family: 'Roboto Condensed', sans-serif;
+        fill: #aaa;
+      }
+
+text.color {
+        fill: #000;
+      }
+	  #container1, #container2{
+	   width: 506px !important;
+		margin: 0 auto;
+		border:1px solid;
+		float:left;
+		}
+		#container3, #container4, #container5, #container6, #container7, #dashboardHeading{
+		width: 1018px !important;
+		margin: 0 auto;
+		border: 1px solid;
+		}
+#container5{
+clear:both;
+}
+#container7{
+overflow:hidden;
+position:relative;
+}	
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}  
+
+.tooltip {
+  position: absolute;
+  display: none;
+  min-width: 80px;
+  height: auto;
+  background: none repeat scroll 0 0 #ffffff;
+  border: 1px solid midnightblue;
+  padding: 10px;
+  text-align: center;
+  font-family: Roboto Condensed
+  font-size: 12px
+}	  
+
+</style>
+</head>
+
+<body>
+<script>
+var margin = {top: 50, right: 30, bottom: 50, left: 30},
+    width = 400 - margin.left - margin.right,
+    height = 450 - margin.top - margin.bottom;
+var border=1;
+var bordercolor='black';
+var padding = 0.15;
+	
+	//var svg = d3.select("body").append("svg").attr("width", width).attr("height",height).style("text-align", "center"); 
+	/*svg.append("text").text("Number of Uber Trips made on each day of the month").style("font-size","36px").style("font-weight", "bold")
+																	  .style("font-family", "Roboto Condensed")
+																	  .attr("transform", "translate(0,"+margin.top+")" );
+		*/
+	
+//heading for the dashboard
+	var div0 = d3.select("body").append("div").attr("id", "dashboardHeading");	
+	var svgHeading = d3.select("#dashboardHeading").append("svg").attr("width", width*3).attr("height",height/6).style("text-align", "center").attr("border",border)
+	//.attr("transform"," translate(-175,-15)");
+	var borderHeading = svgHeading.append("rect").attr("x", 0).attr("y", 0).attr("height", height/6).attr("width", width*3).style("stroke", bordercolor)
+									.style("fill", "midnightblue").style("stroke-width", border);
+	svgHeading.append("text").text("UBER STATISTICS").style("font-size","28px").style("font-weight", "bold")
+							.style("font-family", "Roboto Condensed").style("fill", "white").attr("transform"," translate(400,40)");
+	//svgHeading.append("line").style("stroke", "black").attr("x1", -20).attr("y1", 40).attr("x2", 610).attr("y2", 95).style("stroke-width", 2);
+	var div6 = d3.select("body").append("div").attr("id", "container6").style("width", "840px").style("height", "22px");
+	//.attr("left", 100);
+	
+	var svg6 = d3.select("#container6").append("svg").attr("width", width*2).attr("height","20px").style("text-align", "center")
+	//.attr("transform"," translate(0,0)");
+	
+	
+	
+	svg6.append("text").text(" ").style("font-size","16px")
+							.style("font-family", "Roboto Condensed").style("fill", "black").attr("transform"," translate(60,15)")
+	//var borderSvg6 = svg6.append("rect").attr("x", 0).attr("y", 0).attr("height", height*0.1).attr("width", width).style("stroke", bordercolor)
+		//				.style("fill", "#DCDCDC").style("stroke-width", border);
+		
+	
+	//.attr("transform"," translate(80,35)");
+						
+	
+	
+//Graph 1
+	var div7 = d3.select("body").append("div").attr("id", "container7").style("overflow","hidden").style("position","relative");
+	d3.select("#container7").append("select").attr("id", "month").style("position","absolute").style("top","13%").style("left","40%").style("font-family", "Roboto Condensed");
+	d3.select("#container7").append("text").text("Select month : ").style("font-size","16px").style("font-family", "Roboto Condensed").style("position","absolute").style("top","6%").style("left","40%");
+	var div1 = div7.append("div").attr("id", "container1").style("width", "840px");
+	var svg1 = d3.select("#container1").append("svg").attr("id", "chart1").attr("width", width*1.5).attr("height",height).style("text-align", "center").attr("border",border);
+	var borderSvg1 = svg1.append("rect").attr("x", 0).attr("y", 0).attr("height", height).attr("width", width*1.5).style("stroke", bordercolor)
+						.style("fill", "#F0F0F0").style("stroke-width", border);
+	
+	//.attr("transform"," translate(-175,0)");
+	var toolTipBarChart = d3.select("body").append("div").attr("class","tooltip");
+	svg1.append("text").text("Number of Uber trips/days of the month").style("font-size","18px").style("font-weight", "bold")
+							.style("font-family", "Roboto Condensed").style("fill", "black").attr("transform"," translate(60,35)");
+	
+						
+	d3.csv("uber_data.csv",function(d){return chart(d);});
+	
+	function chart(csv) {
+
+		csv.forEach(function(d) {
+			d.date = d.date;			//.getMonth()
+			d.value = +d.Value;
+			var dates = d.date.split("-");
+			d.month = dates[0]; 
+	//		d.value = +d.value;
+			return d;
+		})
+	var months = [...new Set(csv.map(d => d.month))];
+	//console.log(months);
+	var options = d3.select("#month").selectAll("option").data(months).enter().append("option").text(d => d).style("font-family","Roboto Condensed");
+	
+	var x = d3.scale.ordinal().rangeRoundBands([0, (width*1.2)],padding);
+
+	var y = d3.scale.linear().range([(height*0.6) , 0]);
+	
+	var xAxis = d3.svg.axis().scale(x).orient("bottom");
+	
+	var yAxis = d3.svg.axis().scale(y).orient("left").tickPadding(6);
+	
+	svg1.append("g")
+		.attr("class", "x-axis")
+		.attr("transform", "translate(60,280)")
+		.style("stroke-width", "1px")
+
+	svg1.append("g")
+		.attr("class", "y-axis")
+		.attr("transform", "translate(60,75)");
+		
+	update(d3.select("#month").property("value"), 0)
+
+	function update(month, speed) {
+	
+		//console.log(dataNested);
+		
+		var dataNested = d3.nest().key(function(d) { return d.date;})
+							//{ return d.date.split("-")[0];})
+						.rollup(function(d) { return d3.sum(d, function(g) {
+						//console.log(g.Value);
+						return g.Value; })}).entries(csv)
+						.filter(function(d) {return d.key.split("-")[0] == month});
+						
+		//console.log(dataNested);
+						
+		y.domain([0, d3.max(dataNested, function(d) {return d.values;}) ]);
+		
+		x.domain(dataNested.map(function(d) {return d.key; }));
+		//x.domain(dataNested.map(d => d.key))
+		
+		y.domain([0,Math.ceil(d3.max(dataNested.map(function(d) { return d.values; })))]);
+
+		svg1.selectAll(".x-axis").transition().duration(speed)
+				.call(xAxis)
+				.selectAll("text").attr("y", -5)
+		.attr("x", 10)
+		.attr("transform", "rotate(90)")
+		.style("text-anchor", "start")
+		.style("font-family","Roboto Condensed")
+		.style("font-size","10px");
+				
+		svg1.selectAll(".y-axis").transition().duration(speed)
+				.call(yAxis).selectAll("text").style("font-size","10px").style("font-family","Roboto Condensed");
+				
+		var bar = svg1.selectAll(".bar")
+			.data(dataNested, function(d){
+			//console.log(d.key);
+			return d.key;})
+			
+		//console.log(function(d) {return d.key;});
+
+		bar.exit().remove();
+
+		bar.enter().append("rect")
+			.attr("class", "bar")
+			.attr("fill", "midnightblue")
+			.attr("width", x.rangeBand())
+			.attr("transform","translate(60,70)")
+			.on("mouseover", function() { 
+																d3.select(this).style("fill", "orangered");
+																})
+											.on("mousemove", function(d){
+													toolTipBarChart.style("left", d3.event.pageX - 20 + "px")
+													//.style("font-family","Roboto Condensed")
+													.style("top", d3.event.pageY - 70 + "px")
+													.style("display", "inline-block")
+													.style("font-family","Roboto Condensed")
+													.style("font-size","12px")
+													.html("Date: "+ (d.key)+"<br>" + "Number of Uber Trips completed:"+(d.values) );
+																})
+											.on("mouseout", function(d){
+													toolTipBarChart.transition().duration(500).style("display", "none");
+																})
+											.on("mouseout", function() {
+															d3.select(this).style("fill", "midnightblue");
+																});
+			
+			bar.transition().duration(speed)
+			.attr("x", function(d) {return  (x(d.key));})
+			.attr("y", d => y(d.values))
+			.attr("height", d => y(0) - y(d.values))
+		
+		/*	bar.on("mouseover", function() { 
+																d3.select(this).style("fill", "black");
+																})
+											.on("mousemove", function(d){
+													toolTipBarChart.style("left", d3.event.pageX - 20 + "px")
+													.style("top", d3.event.pageY - 70 + "px")
+													.style("display", "inline-block")
+													.html("Year: "+ (d.year)+"<br>" + "$"+ (d.sales)+ " billion ");
+																})
+											.on("mouseout", function(d){
+													toolTipBarChart.style("display", "none");
+																})
+											.on("mouseout", function() {
+															d3.select(this).style("fill", "red");
+																});*/
+			//.attr("margin-right","10px")
+			
+	}
+
+	chart.update = update;
+}
+
+var select = d3.select("#month")
+	.style("border-radius", "5px")
+	.on("change", function() {
+		//console.log(this.value);
+		chart.update(this.value, 750)
+	})
+	
+//Graph2
+//Referred from : http://bl.ocks.org/chucklam/f3c7b3e3709a0afd5d57		
+	var div2 = div7.append("div").attr("id", "container2").style("width", "840px");
+	
+	var svg2 = d3.select("#container2").append("svg").attr("width", width*1.5).attr("height",height).style("text-align", "center").attr("border",border)
+	//.attr("transform"," translate(335,-350)");
+	
+	var borderSvg2 = svg2.append("rect").attr("x", 0).attr("y", 0).attr("height", height).attr("width", width*1.5).style("stroke", bordercolor)
+						.style("fill", "#F0F0F0").style("stroke-width", border);
+	
+	svg2.append("text").text("Number of Uber trips/day of the week").style("font-size","18px").style("font-weight", "bold")
+							.style("font-family", "Roboto Condensed").style("fill", "black").attr("transform"," translate(60,35)");
+							
+	
+	var xG2 = d3.scale.ordinal().rangeRoundBands([0, (width*1.2)], padding);
+
+	var yG2 = d3.scale.linear().range([(height*0.6), 0]);
+
+	var xAxisG2 = d3.svg.axis().scale(xG2).orient("bottom");
+
+	var yAxisG2 = d3.svg.axis().scale(yG2).orient("left").ticks(7);
+	
+	d3.csv("uber_weekdays.csv", type, function(error, data) {
+
+		var sum = 0;
+		for (var i = 0; i < data.length; i++) {
+			data[i].start = sum;
+			sum += data[i].count;
+			data[i].end = sum;
+
+			data[i].class = ( data[i].count >= 0 ) ? 'positive' : 'negative';
+		}
+	data.push({
+		name: 'Total',
+		end: sum,
+		start: 0,
+		class: 'total'
+	});
+	
+	xG2.domain(data.map(function(d) { return d.weekday; }));
+	yG2.domain([0, d3.max(data, function(d) { return d.end; })]);
+	
+	svg2.append("g").attr("class", "x axis").attr("transform", "translate(60,280)").call(xAxisG2).selectAll("text").style("font-size","10px").style("font-family","Roboto Condensed");;;
+
+	svg2.append("g").attr("class", "y axis").attr("transform", "translate(60,75)").call(yAxisG2).append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Total number of trips")
+	  .style("font-family", "Roboto Condensed").style("font-size","12")
+	  .selectAll("text").style("font-size","10px").style("font-family","Roboto Condensed");
+	  
+	svg2.append("text").text("Total").style("font-size","10px")
+							.style("font-family", "Roboto Condensed").style("fill", "black").attr("transform"," translate(430,296)"); 
+	
+	var barG2 = svg2.selectAll(".bar").data(data).enter().append("g")
+      .attr("class", function(d) { return "bar " + d.class })
+      .attr("transform", function(d) { return "translate(" + xG2(d.weekday) + ",0)"; });
+	  
+	  barG2.append("rect")
+      .attr("y", function(d) { return yG2( Math.max(d.start, d.end) ); })
+      .attr("height", function(d) { return Math.abs( yG2(d.start) - yG2(d.end) ); })
+      .attr("width", xG2.rangeBand())
+	  .attr("transform", "translate(60,70)");
+
+	barG2.append("text")
+      .attr("x", xG2.rangeBand() / 2)
+      .attr("y", function(d) { return yG2(d.end) + 5; })
+      .attr("dy", function(d) { return ((d.class=='negative') ? '-' : '') + ".75em" })
+      .text(function(d) { return (d.end - d.start);})
+	.attr("transform", "translate(42,70)")
+	.style("font-family","Roboto Condensed")
+	.style("font-size", "11px")
+	.style("font-weight", "bold")
+	.attr("fill", "white");
+	});
+
+function type(d) {
+  d.count = +d.count;
+  return d;
+} 
+	
+	
+//Graph3
+
+//This code has been referred from http://bl.ocks.org/tjdecke/5558084
+	
+	var div3 = d3.select("body").append("div").attr("id", "container3").style("position", "relative");
+	var svg3 = d3.select("#container3").append("svg").attr("width", width*3).attr("height",height*1.3).style("text-align", "center").attr("border",border)
+	//.attr("transform"," translate(-175,-300)");
+	var borderSvg3 = svg3.append("rect").attr("x", 0).attr("y", 0).attr("height", height*1.3).attr("width", width*3).style("stroke", bordercolor)
+						.style("fill", "#F0F0F0").style("stroke-width", border);
+	svg3.append("text").text("Heatmap - distribution of the number of pick ups per day and hour").style("font-size","18px").style("font-weight", "bold")
+							.style("font-family", "Roboto Condensed").style("fill", "black").attr("transform"," translate(70,40)");
+							
+							
+	gridSize = Math.floor(width*2.5 / 24),
+    legendElementWidth = gridSize*2.65,
+    buckets = 20,
+	days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    times = ["1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm", "12am"];
+    datasets = ["BROOKLYN.csv","DOWNTOWN.csv", "MANHATTAN.csv", "CHINATOWN.csv"];
+	
+	var dayLabels = svg3.selectAll(".dayLabel")
+          .data(days)
+          .enter().append("text")
+            .text(function (d) { return d; })
+            .attr("x", 0)
+            .attr("y", function (d, i) { return i * gridSize; })
+            .style("text-anchor", "end")
+            .attr("transform", "translate(105," + gridSize/0.3 + ")")
+            .attr("class",  "dayLabel mono axis color"); 
+
+      var timeLabels = svg3.selectAll(".timeLabel")
+          .data(times)
+          .enter().append("text")
+            .text(function(d) { return d; })
+            .attr("x", function(d, i) { return i * gridSize; })
+            .attr("y", 0)
+            .style("text-anchor", "middle")
+            .attr("transform", "translate(" + gridSize/0.275 + ", 80)")
+            .attr("class", function(d, i) { return ((i >= 7 && i <= 17) ? "timeLabel mono axis color" : "timeLabel mono axis"); });
+
+      var heatmapChart = function(csvFile) {
+        d3.csv(csvFile,
+        function(d) {
+          return {
+            day: +d.day,
+            hour: +d.hour,
+            value: +d.value
+			
+			
+          };
+        },
+        function(error, data) {
+          var colorScale = d3.scale.quantile()
+			.domain([(d3.max(data, function (d) { return d.value; })), buckets , 0])
+			  .range(colorbrewer.RdYlGn[9]);
+			  
+		var cards = svg3.selectAll(".hour")
+              .data(data, function(d) {return d.day+':'+d.hour;});
+
+          cards.append("title");
+
+          cards.enter().append("rect")
+              .attr("x", function(d) { return (d.hour) * gridSize; })
+              .attr("y", function(d) { return (d.day ) * gridSize; })
+              .attr("rx", 4)
+              .attr("ry", 4)
+              .attr("class", "hour border")
+              .attr("width", gridSize)
+              .attr("height", gridSize)
+              .style("fill", function(d){ return colorScale(d)})
+			  .attr("transform", "translate(80,60)");//colors[0]);
+
+          cards.transition().duration(750)
+              .style("fill", function(d) { return colorScale(d.value); });
+
+          cards.select("title").text(function(d) { return d.value; });
+          
+          cards.exit().remove();
+
+          var legend = svg3.selectAll(".legend")
+              .data([0].concat(colorScale.quantiles()), function(d) { return d; });
+
+          legend.enter().append("g")
+              .attr("class", "legend");
+
+          legend.append("rect")
+            .attr("x", function(d, i) { return  110 + legendElementWidth * i; })
+            .attr("y", 40 + height)
+            .attr("width", legendElementWidth)
+            .attr("height", gridSize / 2)
+			.attr("class", "legend border")
+            .style("fill", function(d){ return colorScale(d)})
+			;//function(d, i) { return colors[i]; });
+
+          legend.append("text")
+            .attr("class", "mono color")
+            .text(function(d) { return "≥ " + Math.round(d); })
+            .attr("x", function(d, i) { return 110 + legendElementWidth * i; })
+            .attr("y", 40 + height + gridSize);
+
+          legend.exit().remove();
+
+        });  
+      };
+
+      heatmapChart(datasets[0]);
+	  
+	  var city_selected = d3.select("#container3").insert("select", "svg3").attr("id", "test").style("position", "absolute").style("top","30").style("right","105");
+                    /*.on("change", function(d) {
+					console.log(d);
+					heatmapChart(d)});*/
+       // .data(datasets);
+
+      city_selected.selectAll("option").data(datasets).enter()
+        .append("option")
+        .attr("value", function(d){ return d.toString().match(/[A-Z\s]+/); })
+		.text(function(d){ return d.toString().match(/[A-Z\s]+/); })
+	  // .attr("type", "button")
+        //.attr("class", "dataset-button")
+       
+	   city_selected.on("change", function() {
+	   var city = this.value;
+	   city = city+".csv";
+		//console.log(city);
+		heatmapChart(city);
+	});
+							
+//Graoh4	
+	var div4 = d3.select("body").append("div").attr("id", "container4");
+	var svg4 = d3.select("#container4").append("svg").attr("width", width*3).attr("height",height/3.75).style("text-align", "center").attr("border", border)
+	//.attr("transform"," translate(-175,-370)");
+	var borderSvg4 = svg4.append("rect").attr("x", 0).attr("y", 0).attr("height", height*2).attr("width", width*3).style("stroke", bordercolor)
+						.style("fill", "#F0F0F0").style("stroke-width", border);
+						
+	svg4.append("text").text("Comparative Line Chart between cities to compare the growth in the number of Pickup Requests").style("font-size","18px").style("font-weight", "bold")
+							.style("font-family", "Roboto Condensed").style("fill", "black").attr("transform"," translate(70,40)");
+							
+		
+		var margin_comp = {top: 10, right: 80, bottom: 40, left: 130},
+    width_comp = 960 - margin_comp.left - margin_comp.right,
+    height_comp = 350 - margin_comp.top - margin_comp.bottom;
+	
+var svg4 = d3.select("#container4").append("svg")
+    .attr("width", (width_comp*1.078) + margin_comp.left + margin_comp.right)
+    .attr("height", height_comp + margin_comp.top + margin_comp.bottom)
+	//.attr("fill","#F0F0F0")
+  .append("g")
+    .attr("transform", "translate(" + margin_comp.left + "," + margin_comp.top + ")")
+	//.attr("fill","#F0F0F0");
+	
+var borderSvg4 = svg4.append("rect").attr("x", 0).attr("y", 0).attr("height", height_comp*1.17).attr("width", (width*3.5)).style("stroke", "white")
+						.style("fill", "#F0F0F0").style("stroke-width", border).attr("transform","translate(-130,-12)");
+	
+	
+	var x = d3.scale.ordinal().rangeRoundBands([0, width_comp]);
+
+	var y = d3.scale.linear().range([height_comp, 0]);
+
+	var color = d3.scale.category10();
+
+	var xAxis = d3.svg.axis().scale(x).orient("bottom");
+
+	var yAxis = d3.svg.axis().scale(y).orient("left");
+
+	var line = d3.svg.line().x(function(d) { return x(d.month); }).y(function(d) { return y(d.count); });
+	
+
+	
+	d3.csv("Graph_4_Data.csv", function(error, data) {
+  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "month"; }));
+
+  data.forEach(function(d) {
+    d.month = d.month;
+  });
+
+  var cities = color.domain().map(function(name) {
+    return {
+      name: name,
+      values: data.map(function(d) {
+        return {month: d.month, count: +d[name]};
+      })
+    };
+  });
+
+  x.domain(data.map(function(d) { return d.month; }));
+
+  y.domain([
+    d3.min(cities, function(c) { return d3.min(c.values, function(v) { return v.count; }); }),
+    d3.max(cities, function(c) { return d3.max(c.values, function(v) { return v.count; }); })
+  ]);
+
+  svg4.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(-65," + height_comp + ")")
+      .call(xAxis)
+	  .style("font-family", "Roboto Condensed")
+	  .style("font-size","12");
+
+  svg4.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+	  .style("font-family", "Roboto Condensed")
+	  .style("font-size","12")
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Total number of trips")
+	  .style("font-family", "Roboto Condensed").style("font-size","12");
+
+  var city = svg4.selectAll(".city")
+      .data(cities)
+    .enter().append("g")
+      .attr("class", "city");
+
+  city.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return line(d.values); })
+      .style("stroke", function(d) { return color(d.name); });
+
+  city.append("text")
+      .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
+      .attr("transform", function(d) { return "translate(" + x(d.value.month) + "," + y(d.value.count) + ")"; })
+      .attr("x", 3)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name; })
+	  .style("font-family", "Roboto Condensed")
+	  .style("font-size","14");
+
+  city.selectAll("circle")
+    .data(function(d){return d.values})
+    .enter()
+    .append("circle")
+    .attr("r", 3)
+	.attr("cx", function(d) { 
+	return x(d.month); })
+    .attr("cy", function(d) { return y(d.count); })
+    .style("fill", function(d,i,j) { return color(cities[j].name); });
+
+});
+							
+	
+	
+	</script>
+</body>
